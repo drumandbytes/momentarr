@@ -3,7 +3,7 @@ package model
 const (
 	StatusOK    = "ok"
 	StatusError = "error"
-	Version     = "1.0.1" // x-release-please-version
+	Version     = "1.0.2" // x-release-please-version
 )
 
 type Proxy struct {
