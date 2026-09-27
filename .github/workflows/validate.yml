@@ -55,6 +55,19 @@ jobs:
           curl -sS http://localhost:8191/v1 -d '{"cmd":"sessions.list"}' | grep -q '"status":"error"'
           docker rm -f smoke-test
 
+      # Plain `docker run`, no mounts: the README example. /tmp must be
+      # writable by UID 1000 in the image itself, not only via a tmpfs.
+      - name: Container starts without a /tmp mount
+        run: |
+          docker run -d --name plain momentarr:smoke-test
+          sleep 2
+          if [ "$(docker inspect -f '{{.State.Running}}' plain)" != "true" ]; then
+            echo "Container exited early:"
+            docker logs plain
+            exit 1
+          fi
+          docker rm -f plain
+
   zizmor:
     uses: drumandbytes/reusable-actions/.github/workflows/zizmor.yml@v1
 

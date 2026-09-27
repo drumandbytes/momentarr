@@ -12,7 +12,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags=
 # a writable /tmp for the cookie cache are all it needs.
 FROM scratch
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /out/tmp /tmp
+COPY --from=build --chown=1000:1000 /out/tmp /tmp
 COPY --from=build /out/momentarr /momentarr
 USER 1000:1000
 EXPOSE 8191
