@@ -11,18 +11,15 @@ the solver, and nothing else changes.
 ## At a glance
 
 Measured 2026-09-27 on one machine, same IP, same sites (1337x.to, kickasstorrents.to,
-extratorrent.st), in a 2 GiB container VM, default settings:
+extratorrent.st), in a 2 GiB container VM:
 
-| | Repeat request to an already-solved site | 3 unsolved sites requested at once |
+| | Without momentarr | With momentarr |
 | --- | --- | --- |
-| FlareSolverr 3.5.2 alone | 12–13 s, a new browser every time | not measured |
-| Byparr 3.0.4 alone | 6–11 s, a new browser every time | not measured |
-| [Trawl](https://github.com/germondai/trawl) 1.6.5 (has its own cache) | 6.4 s median | 1 of 3 failed with HTTP 429 |
-| **momentarr → Byparr** | **0.1 s median** (max 0.22 s), no browser | **3 of 3 succeeded**, solved one after another |
+| Repeat request to an already-solved site | 6–11 s (Byparr), 12–13 s (FlareSolverr): a full browser solve every time | **~0.1 s** median (max 0.22 s), plain HTTP, no browser |
+| Several unsolved sites at once | one browser per request, all at the same time | **one browser at a time**; 3 of 3 succeeded, solved in turn |
+| Memory between solves | a browser spike (~0.9–1.1 GiB) on every request | the solver idles; momentarr itself uses ~6 MiB |
 
-After that run, momentarr + Byparr settled at 290 MiB (momentarr itself ~6 MiB). Trawl settled at
-646 MiB, because it keeps a warm browser resident. The one number that favours Trawl is peak memory
-during a solve, 1.0 GiB vs 1.3 GiB, since it reuses that warm browser instead of launching one.
+The cached path never reaches the solver, so the ~0.1 s holds whichever solver you run behind it.
 
 ## Why
 
@@ -51,7 +48,7 @@ appears, swap `BACKEND_URL` and keep the cache and the queue.
 
 Some sites bind the clearance to the solving browser's TLS fingerprint, not just its IP and user
 agent. A plain HTTP replay gets challenged there, so momentarr drops the cookie and solves again every
-time: correct, but no faster than the solver alone. Trawl's MITM proxy mode is built for those sites.
+time: correct, but no faster than the solver alone. You still get the queue.
 
 It must share the solver's egress IP. In Kubernetes, run both as containers in the same pod as the
 consumer (e.g. behind a VPN sidecar).
