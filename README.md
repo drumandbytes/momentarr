@@ -71,3 +71,8 @@ curl -s localhost:8191/v1 -d '{"cmd":"request.get","url":"https://example.com"}'
 
 The image is `FROM scratch`: a static binary, CA certificates and `/tmp`, running as UID 1000. It works
 with a read-only root filesystem as long as `/tmp` is writable.
+
+## How it was made
+
+momentarr was developed with an AI coding assistant (Claude). The design, review and testing are
+mine, and it runs in my own homelab behind Prowlarr.
