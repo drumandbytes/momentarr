@@ -1,0 +1,30 @@
+version: 2
+updates:
+
+  - package-ecosystem: "docker"
+    cooldown:
+      default-days: 7
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      docker:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "fix"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    cooldown:
+      default-days: 7
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+    # `ci(deps):` — CI-only, no image change, so no release.
+    commit-message:
+      prefix: "ci"
+      include: "scope"

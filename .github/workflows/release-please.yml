@@ -1,0 +1,17 @@
+name: Release Please
+
+# The release tag triggers build.yml. Immutable tags, no floating vN.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    uses: drumandbytes/reusable-actions/.github/workflows/release-please.yml@v1
+    secrets:
+      DNB_ROBOT_CLIENT_ID: ${{ secrets.DNB_ROBOT_CLIENT_ID }}
+      AUTOMATION_APP_PRIVATE_KEY: ${{ secrets.AUTOMATION_APP_PRIVATE_KEY }}

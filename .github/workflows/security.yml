@@ -1,0 +1,22 @@
+name: Security
+
+# Separate from CI so a finding can't block auto-merge of an unrelated Dependabot fix.
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  trivy:
+    uses: drumandbytes/reusable-actions/.github/workflows/security-scan.yml@v1
+    with:
+      scan-type: image
