@@ -3,8 +3,23 @@
 [More Drumandbytes projects](https://drumandbytes.com/projects/)
 
 A caching, serialising proxy for [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)-compatible
-Cloudflare solvers ([Byparr](https://github.com/ThePhaseless/Byparr), FlareSolverr). It speaks the same
-`/v1` API, so Prowlarr and friends point at momentarr instead of the solver.
+Cloudflare solvers. Put it in front of any of them ([Byparr](https://github.com/ThePhaseless/Byparr),
+FlareSolverr, or whatever comes next): repeat requests stop launching a browser, and bursts stop
+stacking them. It speaks the same `/v1` API, so Prowlarr and friends point at momentarr instead of
+the solver, and nothing else changes.
+
+## At a glance
+
+Measured 2026-09-27 on one machine, same IP, same sites (1337x.to, kickasstorrents.to,
+extratorrent.st), in a 2 GiB container VM:
+
+| | Without momentarr | With momentarr |
+| --- | --- | --- |
+| Repeat request to an already-solved site | 6–11 s (Byparr), 12–13 s (FlareSolverr): a full browser solve every time | **~0.1 s** median (max 0.22 s), plain HTTP, no browser |
+| Several unsolved sites at once | one browser per request, all at the same time | **one browser at a time**; 3 of 3 succeeded, solved in turn |
+| Memory between solves | a browser spike (~0.9–1.1 GiB) on every request | the solver idles; momentarr itself uses ~6 MiB |
+
+The cached path never reaches the solver, so the ~0.1 s holds whichever solver you run behind it.
 
 ## Why
 
@@ -16,21 +31,24 @@ momentarr does two things in front of the solver:
 
 - **Reuses the clearance.** `cf_clearance` is bound to the client IP and user agent, not to the
   browser. After a solve, momentarr keeps the cookies and user agent per host. The next request for
-  that host is a plain HTTP fetch with them, taking about 100ms and no browser. If the site challenges
-  anyway, the entry is dropped and the request goes to the solver.
+  that host is a plain HTTP fetch with them, taking about 100 ms and no browser. If the site
+  challenges anyway, the entry is dropped and the request goes to the solver.
 - **Runs one solve at a time.** Everything that needs the solver waits for a slot
   (`BACKEND_CONCURRENCY`, default 1). After the wait it checks the cache again, so a burst of searches
   against one site costs a single solve.
 
 Queue time counts against the request's `maxTimeout`, the same as a busy FlareSolverr. Set Prowlarr's
-request timeout high enough to cover a solve plus whatever is ahead of it (90s works for one solver).
+request timeout high enough to cover a solve plus whatever is ahead of it (120 s covers about eight
+unsolved sites at once).
 
-Measured against kickasstorrents.to and 1337x.to with Byparr as the backend:
+Because it only needs the FlareSolverr API, momentarr isn't tied to any solver. When a better one
+appears, swap `BACKEND_URL` and keep the cache and the queue.
 
-| | Latency | Memory |
-| --- | --- | --- |
-| Solve (miss) | 6–13s | Byparr peak ~900MiB, idle ~100MiB |
-| Cached clearance (hit) | 30–130ms | momentarr ~6MiB |
+### When it doesn't help
+
+Some sites bind the clearance to the solving browser's TLS fingerprint, not just its IP and user
+agent. A plain HTTP replay gets challenged there, so momentarr drops the cookie and solves again every
+time: correct, but no faster than the solver alone. You still get the queue.
 
 It must share the solver's egress IP. In Kubernetes, run both as containers in the same pod as the
 consumer (e.g. behind a VPN sidecar).
