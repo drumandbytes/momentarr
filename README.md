@@ -43,7 +43,7 @@ consumer (e.g. behind a VPN sidecar).
 | `BACKEND_URL` | `http://127.0.0.1:8192` | The real solver |
 | `BACKEND_CONCURRENCY` | `1` | Solver requests in flight |
 | `COOKIE_DIR` | `/tmp/momentarr-cookies` | Clearance cache |
-| `COOKIE_TTL_HOURS` | `24` | Upper bound; a cookie's own expiry wins if sooner |
+| `COOKIE_TTL_HOURS` | `720` | Upper bound; the cookie's own expiry wins if sooner. Sites set `cf_clearance` from 30 minutes (Cloudflare's default) up to a year (1337x); a revoked one is dropped as soon as the site challenges it |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 
 ## Logs
