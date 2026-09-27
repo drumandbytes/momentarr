@@ -1,9 +1,11 @@
-FROM golang:1.27-alpine AS build
+# Cross-compile on the runner's own arch; building arm64 under QEMU took minutes.
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
+ARG TARGETOS TARGETARCH
 WORKDIR /src
 COPY go.mod ./
 COPY cmd ./cmd
 COPY internal ./internal
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/momentarr ./cmd/momentarr \
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/momentarr ./cmd/momentarr \
  && mkdir -m 1777 /out/tmp
 
 # Static stdlib-only binary: CA certs for the cached-clearance HTTPS fetch and
