@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/drumandbytes/momentarr/compare/v1.0.0...v1.0.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* cross-compile natively instead of building arm64 under QEMU ([#3](https://github.com/drumandbytes/momentarr/issues/3)) ([3aa5b3a](https://github.com/drumandbytes/momentarr/commit/3aa5b3a55b42d70f50250eacced283a7c2a86548))
+* probe the backend without triggering a solve, keep clearances up to 30 days ([#4](https://github.com/drumandbytes/momentarr/issues/4)) ([9dd03a7](https://github.com/drumandbytes/momentarr/commit/9dd03a7aa9db993c2dc7666d4b91f6464c9c8578))
+
 ## 1.0.0 (2026-09-27)
 
 
