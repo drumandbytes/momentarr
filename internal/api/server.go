@@ -379,7 +379,9 @@ func (s *Server) checkBackend(ctx context.Context, wasReachable bool) bool {
 func (s *Server) probe(ctx context.Context) bool {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	r, err := http.NewRequestWithContext(ctx, "GET", s.backend+"/health", nil)
+	// Any answer means the solver is up. Not /health: Byparr's runs a real
+	// browser request, a memory spike outside the queue.
+	r, err := http.NewRequestWithContext(ctx, "GET", s.backend+"/", nil)
 	if err != nil {
 		slog.Error("invalid backend url", "backend", s.backend, "err", err)
 		return false
@@ -391,7 +393,7 @@ func (s *Server) probe(ctx context.Context) bool {
 	}
 	_ = resp.Body.Close()
 	slog.Debug("backend health check", "code", resp.StatusCode)
-	return resp.StatusCode == 200
+	return resp.StatusCode < 500
 }
 
 // awaitBackend polls until the solver answers: it usually starts slower than

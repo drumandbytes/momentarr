@@ -28,7 +28,7 @@ func main() {
 	backend := env("BACKEND_URL", "http://127.0.0.1:8192")
 	concurrency := positive("BACKEND_CONCURRENCY", 1)
 	cookieDir := env("COOKIE_DIR", "/tmp/momentarr-cookies")
-	ttlHours := positive("COOKIE_TTL_HOURS", 24)
+	ttlHours := positive("COOKIE_TTL_HOURS", 720)
 	store, err := cache.New(cookieDir, ttlHours)
 	if err != nil {
 		fatal("cannot open cookie cache", "dir", cookieDir, "err", err)
